@@ -127,7 +127,11 @@ label{display:block;font-weight:700;margin-bottom:8px}
 .item .ans{font-size:15px;margin-top:4px;color:var(--muted)}
 .item .ans b{color:var(--ink);font-weight:500}
 .mark{font-weight:700;margin-left:6px}
-.mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
+.mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)} .mark.half{color:#E0A100}
+.hint{font-size:15px;color:var(--muted);margin-top:8px}
+.hint.warn{color:var(--bad);font-weight:700}
+.next{margin-top:22px}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
 
 .fade{animation:in .28s ease both}
 @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -177,6 +181,8 @@ const N = Q.length;
 const app = document.getElementById("app");
 const S = {mode:null, idx:0, picks:[], name:"", target:null, targetName:"", code:""};
 
+const pc = m => (m&1)+(m>>1&1)+(m>>2&1)+(m>>3&1);
+const fmt = x => fa(Number.isInteger(x) ? x : x.toFixed(1)).replace(".","٫");
 const fa = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 function screen(cls){ app.innerHTML = ""; app.className = cls || ""; const w = el("div","fade"); app.appendChild(w); window.scrollTo(0,0); return w; }
@@ -194,22 +200,29 @@ function b64urlDecode(s){
   return new TextDecoder().decode(bytes);
 }
 function makeCode(picks, name){
-  let hex = "";
-  for (let i=0;i<N;i+=2) hex += (picks[i]*4 + (picks[i+1] ?? 0)).toString(16);
-  const chk = (picks.reduce((s,v,i)=>s+v*(i+1),0) % 16).toString(16);
+  const hex = picks.map(m => m.toString(16)).join("");
+  const chk = (picks.reduce((t,v,i)=>t+v*(i+1),0) % 16).toString(16);
   return (hex + chk).toUpperCase() + "." + b64urlEncode(name);
 }
 function readCode(text){
   if (!text) return null;
-  const m = String(text).match(/([0-9A-Fa-f]{13})\.([A-Za-z0-9_-]+)/);
+  const m = String(text).match(/([0-9A-Fa-f]{25}|[0-9A-Fa-f]{13})\.([A-Za-z0-9_-]+)/);
   if (!m) return null;
-  const h = m[1].toUpperCase(); const picks = [];
-  for (let i=0;i<12;i++){ const v = parseInt(h[i],16); picks.push(Math.floor(v/4), v%4); }
-  const chk = (picks.reduce((s,v,i)=>s+v*(i+1),0) % 16).toString(16).toUpperCase();
-  if (chk !== h[12]) return null;
+  const h = m[1].toUpperCase(); let picks = [];
+  if (h.length === 25){
+    for (let i=0;i<N;i++) picks.push(parseInt(h[i],16));
+    const chk = (picks.reduce((t,v,i)=>t+v*(i+1),0) % 16).toString(16).toUpperCase();
+    if (chk !== h[24] || picks.some(v => v === 0 || pc(v) > 2)) return null;
+  } else {
+    const old = [];
+    for (let i=0;i<12;i++){ const v = parseInt(h[i],16); old.push(Math.floor(v/4), v%4); }
+    const chk = (old.reduce((t,v,i)=>t+v*(i+1),0) % 16).toString(16).toUpperCase();
+    if (chk !== h[12]) return null;
+    picks = old.slice(0,N).map(v => 1 << v);
+  }
   let name = "";
   try { name = b64urlDecode(m[2]).slice(0,40); } catch(e){ return null; }
-  return {picks:picks.slice(0,N), name: name.trim() || "دوستت", code: h + "." + m[2]};
+  return {picks, name: name.trim() || "دوستت", code: h + "." + m[2]};
 }
 
 /* ---------- اشتراک ---------- */
@@ -321,7 +334,7 @@ function guessIntro(){
   h.append(venn());
   const t = el("h1"); t.textContent = S.targetName + " منتظرته!";
   h.append(t);
-  h.append(el("p","muted", S.targetName + " به " + fa(N) + " سؤال جواب داده. تو باید حدس بزنی چی انتخاب کرده. آخرش امتیازت رو می‌بینی."));
+  h.append(el("p","muted", S.targetName + " به " + fa(N) + " سؤال جواب داده و برای هر سؤال یک یا دو گزینه انتخاب کرده. تو هم می‌تونی یک یا دو گزینه حدس بزنی. اگه دقیقاً همون رو بزنی یه امتیاز می‌گیری، اگه نصفه درست باشه نیم امتیاز."));
   const a = el("div","actions stack");
   const go = el("button","btn b","بزن بریم"); go.onclick = question;
   a.append(go); h.append(a); w.append(h);
@@ -329,30 +342,50 @@ function guessIntro(){
 
 function question(){
   const i = S.idx, it = Q[i];
-  const w = screen(S.mode === "a" ? "mode-a" : "mode-b");
+  const isA = S.mode === "a";
+  const w = screen(isA ? "mode-a" : "mode-b");
   const top = el("div","top");
   const back = el("button","link", i === 0 ? "خانه" : "قبلی");
   back.onclick = () => { if (i === 0) home(); else { S.idx--; question(); } };
   top.append(el("span","count", fa(i+1) + " از " + fa(N)), back);
   const bar = el("div","bar"); const fill = el("i"); fill.style.width = (i/N*100) + "%"; bar.append(fill);
   w.append(top, bar);
-  w.append(el("span","who", S.mode === "a" ? "درباره‌ی خودت" : "فکر می‌کنی " + S.targetName + " چی زده؟"));
+  w.append(el("span","who", isA ? "درباره‌ی خودت" : "فکر می‌کنی " + S.targetName + " چی زده؟"));
   w.append(el("h2","q", it.q));
+  const hint = el("p","hint","یک یا دو گزینه انتخاب کن");
+  w.append(hint);
+  let mask = S.picks[i] || 0;
   const opts = el("div","opts"); opts.setAttribute("role","group");
-  let locked = false;
+  const next = el("button","btn next " + (isA ? "a" : "b"), i < N-1 ? "بعدی" : "تموم شد");
+  const sync = () => {
+    opts.querySelectorAll(".opt").forEach((x,k) => {
+      const on = !!(mask & (1<<k));
+      x.classList.toggle("sel", on); x.setAttribute("aria-pressed", on);
+    });
+    next.disabled = !mask;
+    S.picks[i] = mask;
+  };
   it.o.forEach((txt, k) => {
-    const b = el("button","opt" + (S.picks[i] === k ? " sel" : ""));
+    const b = el("button","opt");
     b.append(el("span","k",KEYS[k]), el("span",null,txt));
     b.onclick = () => {
-      if (locked) return; locked = true;
-      S.picks[i] = k;
-      opts.querySelectorAll(".opt").forEach(x => x.classList.remove("sel")); b.classList.add("sel");
-      fill.style.width = ((i+1)/N*100) + "%";
-      setTimeout(() => { if (i < N-1){ S.idx++; question(); } else finish(); }, 260);
+      const bit = 1 << k;
+      if (mask & bit) mask &= ~bit;
+      else if (pc(mask) >= 2){
+        hint.textContent = "حداکثر دو گزینه می‌شه انتخاب کرد. اول یکی رو بردار.";
+        hint.classList.add("warn"); return;
+      } else mask |= bit;
+      hint.textContent = "یک یا دو گزینه انتخاب کن"; hint.classList.remove("warn");
+      sync();
     };
     opts.append(b);
   });
-  w.append(opts);
+  next.onclick = () => {
+    if (!mask) return;
+    if (i < N-1){ S.idx++; question(); } else finish();
+  };
+  w.append(opts, next);
+  sync();
 }
 
 function finish(){ S.mode === "a" ? created() : result(); }
@@ -387,14 +420,16 @@ function verdict(s){
 }
 
 function result(){
-  const score = S.picks.reduce((s,v,i) => s + (v === S.target[i] ? 1 : 0), 0);
+  const pts = Q.map((_, i) => { const t = S.target[i], g = S.picks[i]; return t === g ? 1 : (t & g) ? 0.5 : 0; });
+  const score = pts.reduce((a,b) => a+b, 0);
+  const names = (it, m) => it.o.filter((_,k) => m & (1<<k)).join(" و ");
   const w = screen("mode-b");
   const r = el("section","result");
   r.append(venn(score, N));
-  const sc = el("p","score"); sc.append(fa(score) + " "); sc.append(el("small",null,"از " + fa(N)));
+  const sc = el("p","score"); sc.append(fmt(score) + " "); sc.append(el("small",null,"از " + fa(N)));
   r.append(sc, el("p","verdict", verdict(score)));
   const a = el("div","actions stack");
-  const text = "توی «چقدر منو می‌شناسی؟» " + fa(score) + " از " + fa(N) + " جواب‌های " + S.targetName + " رو درست حدس زدم! " + verdict(score)
+  const text = "توی «چقدر منو می‌شناسی؟» " + fmt(score) + " از " + fa(N) + " امتیاز درباره‌ی " + S.targetName + " گرفتم! " + verdict(score)
              + (APP_URL ? "\n" + APP_URL : "");
   shareBlock(a, text, "فرستادن نتیجه برای " + S.targetName, "b");
   const mine = el("button","btn a","حالا نوبت منه که جواب بدم"); mine.onclick = askName;
@@ -404,13 +439,14 @@ function result(){
   const rv = el("div","review");
   rv.append(el("h2",null,"جواب‌ها کنار هم"));
   Q.forEach((it, i) => {
-    const ok = S.picks[i] === S.target[i];
+    const p = pts[i];
     const d = el("div","item");
-    const qq = el("p","qq"); qq.append(el("span","mark " + (ok ? "ok" : "bad"), ok ? "✓" : "✗"), document.createTextNode(it.q));
+    const qq = el("p","qq");
+    qq.append(el("span","mark " + (p === 1 ? "ok" : p ? "half" : "bad"), p === 1 ? "✓" : p ? "◐" : "✗"), document.createTextNode(it.q));
     d.append(qq);
-    const a1 = el("p","ans"); a1.append(document.createTextNode(S.targetName + ": ")); a1.append(el("b",null,it.o[S.target[i]]));
+    const a1 = el("p","ans"); a1.append(document.createTextNode(S.targetName + ": ")); a1.append(el("b",null,names(it, S.target[i])));
     d.append(a1);
-    if (!ok){ const a2 = el("p","ans"); a2.append(document.createTextNode("حدس تو: ")); a2.append(el("b",null,it.o[S.picks[i]])); d.append(a2); }
+    if (p !== 1){ const a2 = el("p","ans"); a2.append(document.createTextNode("حدس تو: ")); a2.append(el("b",null,names(it, S.picks[i]))); d.append(a2); }
     rv.append(d);
   });
   r.append(rv);
