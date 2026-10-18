@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>چقدر منو می‌شناسی؟</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF6FA; --surface:#FFFFFF; --ink:#24183A; --muted:#6E6286;
+  --line:#EADCF0; --a:#2D5BFF; --b:#FF3D8B; --a-soft:#E6ECFF; --b-soft:#FFE3EF;
+  --ok:#14915A; --bad:#D6304F;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#17121F; --surface:#221B2E; --ink:#F4EEFA; --muted:#AFA3C4;
+    --line:#382C4A; --a:#6D8CFF; --b:#FF6BA8; --a-soft:#232A4D; --b-soft:#3D1F33;
+    --ok:#3FD18C; --bad:#FF6680; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#17121F; --surface:#221B2E; --ink:#F4EEFA; --muted:#AFA3C4;
+  --line:#382C4A; --a:#6D8CFF; --b:#FF6BA8; --a-soft:#232A4D; --b-soft:#3D1F33;
+  --ok:#3FD18C; --bad:#FF6680; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0;min-height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;
+  font-size:17px; line-height:1.75;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{max-width:520px;margin:0 auto;padding:20px 18px 40px}
+h1,h2,.display{font-family:"Lalezar","Vazirmatn",Tahoma,sans-serif;font-weight:400;margin:0}
+h1{font-size:44px;line-height:1.25}
+h2{font-size:28px;line-height:1.45}
+p{margin:0}
+.muted{color:var(--muted)}
+.stack>*+*{margin-top:14px}
+
+.btn{
+  display:block;width:100%;border:0;cursor:pointer;
+  font:inherit;font-weight:700;font-size:18px;
+  padding:16px 18px;border-radius:18px;
+  background:var(--ink);color:var(--bg);
+  text-align:center;text-decoration:none;
+}
+.btn.a{background:var(--a);color:#fff}
+.btn.b{background:var(--b);color:#fff}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible,textarea:focus-visible,.link:focus-visible{outline:3px solid var(--b);outline-offset:3px}
+.link{background:none;border:0;font:inherit;color:var(--muted);cursor:pointer;padding:8px 4px;text-decoration:underline;text-underline-offset:4px}
+
+input,textarea{
+  width:100%;font:inherit;font-size:18px;color:var(--ink);
+  background:var(--surface);border:2px solid var(--line);
+  border-radius:16px;padding:14px 16px;
+}
+textarea{min-height:110px;resize:vertical;line-height:1.7}
+label{display:block;font-weight:700;margin-bottom:8px}
+.err{color:var(--bad);font-size:15px;min-height:1.5em}
+
+/* hero */
+.hero{padding-top:18px;text-align:center}
+.hero svg{width:min(260px,70%);height:auto;display:block;margin:0 auto 6px}
+.hero h1{margin-top:4px}
+.hero p{margin:10px auto 0;max-width:34ch}
+.actions{margin-top:30px}
+
+/* question */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.count{font-weight:700;color:var(--muted);font-size:15px}
+.bar{height:8px;border-radius:99px;background:var(--line);margin:10px 0 26px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .3s ease}
+.mode-a .bar i{background:var(--a)}
+.mode-b .bar i{background:var(--b)}
+.who{font-weight:700;font-size:15px;padding:4px 12px;border-radius:99px;display:inline-block;margin-bottom:12px}
+.mode-a .who{background:var(--a-soft);color:var(--a)}
+.mode-b .who{background:var(--b-soft);color:var(--b)}
+.opts{margin-top:22px;display:grid;gap:12px}
+.opt{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:right;
+  font:inherit;font-size:17px;color:var(--ink);cursor:pointer;
+  background:var(--surface);border:2px solid var(--line);
+  border-radius:18px;padding:14px 14px;
+  transition:border-color .15s,background .15s;
+}
+.opt .k{
+  flex:none;width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;font-weight:700;font-size:15px;
+  background:var(--line);color:var(--ink);
+}
+.mode-a .opt.sel{border-color:var(--a);background:var(--a-soft)}
+.mode-a .opt.sel .k{background:var(--a);color:#fff}
+.mode-b .opt.sel{border-color:var(--b);background:var(--b-soft)}
+.mode-b .opt.sel .k{background:var(--b);color:#fff}
+
+/* code box */
+.codebox{
+  background:var(--surface);border:2px dashed var(--line);border-radius:18px;
+  padding:16px;text-align:center;
+}
+.codebox .code{font-family:"Vazirmatn",monospace;font-size:20px;font-weight:700;letter-spacing:.04em;direction:ltr;word-break:break-all}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.note{font-size:15px;color:var(--muted)}
+
+/* result */
+.result{text-align:center;padding-top:6px}
+.result svg{width:min(280px,78%);height:auto;display:block;margin:0 auto}
+.score{font-family:"Lalezar","Vazirmatn",sans-serif;font-size:64px;line-height:1.1;margin-top:4px}
+.score small{font-size:26px;color:var(--muted)}
+.verdict{font-size:22px;font-family:"Lalezar","Vazirmatn",sans-serif;margin-top:6px}
+.review{margin-top:30px;text-align:right}
+.review h2{font-size:24px;margin-bottom:10px}
+.item{border-top:1px solid var(--line);padding:14px 2px}
+.item .qq{font-weight:700}
+.item .ans{font-size:15px;margin-top:4px;color:var(--muted)}
+.item .ans b{color:var(--ink);font-weight:500}
+.mark{font-weight:700;margin-left:6px}
+.mark.ok{color:var(--ok)} .mark.bad{color:var(--bad)}
+
+.fade{animation:in .28s ease both}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .fade{animation:none}.bar i{transition:none}
+  .venn circle{transition:none!important}
+}
+.venn circle{transition:cx 1.1s cubic-bezier(.2,.8,.2,1)}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+
+<script>
+// لینک صفحه بعد از انتشار اینجا قرار می‌گیرد
+const APP_URL = /^https?:/.test(location.protocol) ? location.href.split("#")[0].split("?")[0] : "";
+
+const Q = [
+ {q:"اگه یه روز کامل آزاد داشته باشم، ترجیح می‌دم…", o:["تا ظهر بخوابم و فیلم ببینم","برم سفر یه‌روزه","با دوستام بیرون باشم","یه کار عقب‌افتاده رو تموم کنم"]},
+ {q:"وقتی ناراحتم، بیشتر از همه چی کمکم می‌کنه؟", o:["تنها باشم","یکی بغلم کنه","درباره‌اش حرف بزنم","حواسم رو با یه چیز دیگه پرت کنم"]},
+ {q:"کدوم غذا رو هر روز هم بخورم خسته نمی‌شم؟", o:["پیتزا","قورمه‌سبزی","کباب","پاستا"]},
+ {q:"بزرگ‌ترین ترسم کدومه؟", o:["تنهایی","شکست خوردن","از دست دادن عزیزانم","یکنواخت شدن زندگی"]},
+ {q:"اگه یهو یه میلیارد پول بهم برسه، اول چیکار می‌کنم؟", o:["می‌رم سفر","پس‌انداز یا سرمایه‌گذاری","یه چیزی که خیلی وقته می‌خوام رو می‌خرم","به خانواده و دوستام کمک می‌کنم"]},
+ {q:"توی یه مهمونی معمولاً کجام؟", o:["وسط جمع، دارم می‌خندونم","گوشه‌ای با یکی دو نفر گرم صحبتم","کنار میز غذا","دارم به رفتن فکر می‌کنم"]},
+ {q:"کدوم فصل رو بیشتر دوست دارم؟", o:["بهار","تابستون","پاییز","زمستون"]},
+ {q:"بیشترین وقتم توی گوشی کجا می‌گذره؟", o:["اینستاگرام","تلگرام و واتساپ","یوتیوب و فیلم","بازی"]},
+ {q:"اگه می‌تونستم یه ابرقدرت داشته باشم، کدوم بود؟", o:["ذهن‌خوانی","پرواز","سفر در زمان","نامرئی شدن"]},
+ {q:"زبان عشق من کدومه؟", o:["حرف‌های قشنگ و تعریف","وقت گذاشتن با هم","هدیه گرفتن","لمس و بغل"]},
+ {q:"کدوم عادتم بیشتر از همه رو اعصاب بقیه‌ست؟", o:["دیر کردن","زیاد با گوشی بودن","بی‌نظمی","دیر جواب دادن پیام‌ها"]},
+ {q:"سفر ایده‌آل من چه شکلیه؟", o:["کنار دریا و استراحت","کوه و طبیعت‌گردی","گشتن توی یه شهر شلوغ و تاریخی","جاده‌گردی بی‌برنامه"]},
+ {q:"صبح‌ها اولین کاری که می‌کنم؟", o:["چک کردن گوشی","چای یا قهوه","چند بار زنگ ساعت رو عقب می‌ندازم","سریع آماده می‌شم و می‌رم"]},
+ {q:"اگه یه فیلم از زندگیم بسازن، ژانرش چیه؟", o:["کمدی","درام","عاشقانه","اکشن و ماجراجویی"]},
+ {q:"توی دعوا معمولاً چیکار می‌کنم؟", o:["ساکت می‌شم و قهر می‌کنم","همون لحظه همه چی رو می‌گم","زود کوتاه میام","تا حرفم رو ثابت نکنم ول نمی‌کنم"]},
+ {q:"کدوم حیوون بیشتر شبیه منه؟", o:["گربه","سگ","پنگوئن","جغد"]},
+ {q:"بهترین هدیه‌ای که می‌شه بهم داد؟", o:["یه چیز دست‌ساز و شخصی","یه تجربه مثل سفر یا کنسرت","یه چیز کاربردی که لازمش دارم","گل و یه نامه"]},
+ {q:"وقتی خیلی گرسنه‌ام چه شکلی می‌شم؟", o:["بداخلاق و عصبی","ساکت و بی‌حوصله","فقط درباره‌ی غذا حرف می‌زنم","فرقی نمی‌کنم"]},
+ {q:"شب جمعه‌ی ایده‌آلم چطوریه؟", o:["خونه، فیلم و تخمه","کافه یا رستوران","دورهمی با بچه‌ها","دور دور با ماشین و موزیک"]},
+ {q:"اگه فقط می‌تونستم یه وسیله با خودم به یه جزیره‌ی دورافتاده ببرم، چی می‌بردم؟", o:["گوشی با شارژ بی‌نهایت","یه کتاب یا دفترچه","یه چاقوی همه‌کاره","یه آدم (خودت!)"]},
+ {q:"گیلتی پلژر من چیه؟", o:["دیدن سریال‌های ترکی یا ریالیتی‌شوهای بی‌کیفیت","آهنگ‌های قدیمی و بزن‌برقصی که جلوی بقیه انکارشون می‌کنم","فست‌فود و هله‌هوله‌ی آخر شب","ساعت‌ها دیدن ویدیوهای بی‌ربط مثل آشپزی یا تمیزکاری"]},
+ {q:"کدوم دروغ کوچیک رو زیاد می‌گم؟", o:["«دارم میام، تو راهم»","«نه بابا ناراحت نیستم»","«پیامت رو ندیده بودم»","«از فردا رژیم می‌گیرم»"]},
+ {q:"توی گروه دوستان، من معمولاً کدوم نقشم؟", o:["اونی که برنامه می‌چینه و همه رو جمع می‌کنه","اونی که همه چی رو شوخی می‌کنه و جو رو گرم می‌کنه","اونی که همه درد دلشون رو بهش می‌گن","اونی که کم حرف می‌زنه ولی وقتی می‌زنه همه می‌خندن"]},
+ {q:"وقتی تنها توی خونه‌ام، بیشتر احتمال داره داشته باشم چیکار می‌کنم؟", o:["آهنگ می‌خونم و می‌رقصم","توی تخت گوشی‌بازی می‌کنم","از یخچال هرچی هست می‌خورم","با خودم حرف می‌زنم یا سناریو می‌سازم"]}
+];
+const KEYS = ["الف","ب","ج","د"];
+const N = Q.length;
+
+const app = document.getElementById("app");
+const S = {mode:null, idx:0, picks:[], name:"", target:null, targetName:"", code:""};
+
+const fa = n => String(n).replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+function screen(cls){ app.innerHTML = ""; app.className = cls || ""; const w = el("div","fade"); app.appendChild(w); window.scrollTo(0,0); return w; }
+
+/* ---------- کد ---------- */
+function b64urlEncode(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64urlDecode(s){
+  s = s.replace(/-/g,"+").replace(/_/g,"/"); while (s.length % 4) s += "=";
+  const bin = atob(s); const bytes = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function makeCode(picks, name){
+  let hex = "";
+  for (let i=0;i<N;i+=2) hex += (picks[i]*4 + (picks[i+1] ?? 0)).toString(16);
+  const chk = (picks.reduce((s,v,i)=>s+v*(i+1),0) % 16).toString(16);
+  return (hex + chk).toUpperCase() + "." + b64urlEncode(name);
+}
+function readCode(text){
+  if (!text) return null;
+  const m = String(text).match(/([0-9A-Fa-f]{13})\.([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  const h = m[1].toUpperCase(); const picks = [];
+  for (let i=0;i<12;i++){ const v = parseInt(h[i],16); picks.push(Math.floor(v/4), v%4); }
+  const chk = (picks.reduce((s,v,i)=>s+v*(i+1),0) % 16).toString(16).toUpperCase();
+  if (chk !== h[12]) return null;
+  let name = "";
+  try { name = b64urlDecode(m[2]).slice(0,40); } catch(e){ return null; }
+  return {picks:picks.slice(0,N), name: name.trim() || "دوستت", code: h + "." + m[2]};
+}
+
+/* ---------- اشتراک ---------- */
+async function shareOrCopy(text){
+  if (navigator.share){
+    try { await navigator.share({text}); return "shared"; }
+    catch(e){ if (e && e.name === "AbortError") return "cancel"; }
+  }
+  try { await navigator.clipboard.writeText(text); return "copied"; } catch(e){}
+  return "fail";
+}
+function shareBlock(parent, text, primaryLabel, cls){
+  const btn = el("button","btn " + (cls||""), primaryLabel);
+  const msg = el("p","note"); msg.style.textAlign = "center";
+  btn.onclick = async () => {
+    const r = await shareOrCopy(text);
+    msg.textContent = r === "copied" ? "متن کپی شد. حالا توی واتساپ یا تلگرام پیستش کن."
+                    : r === "fail" ? "اشتراک‌گذاری خودکار کار نکرد. متن پایین رو نگه دار و کپی کن."
+                    : "";
+    if (r === "fail") ta.focus(), ta.select();
+  };
+  const row = el("div","row");
+  const wa = el("a","btn ghost","واتساپ"); wa.href = "https://wa.me/?text=" + encodeURIComponent(text); wa.target = "_blank"; wa.rel = "noopener";
+  const tg = el("a","btn ghost","تلگرام"); tg.href = "https://t.me/share/url?url=" + encodeURIComponent(APP_URL || " ") + "&text=" + encodeURIComponent(text); tg.target = "_blank"; tg.rel = "noopener";
+  row.append(wa, tg);
+  const ta = el("textarea"); ta.readOnly = true; ta.value = text; ta.setAttribute("aria-label","متن پیام");
+  parent.append(btn, msg, row, ta);
+}
+
+/* ---------- نمودار دو دایره ---------- */
+function venn(score, total){
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns,"svg");
+  svg.setAttribute("viewBox","0 0 300 190"); svg.setAttribute("class","venn"); svg.setAttribute("aria-hidden","true");
+  const mk = (cx, color) => { const c = document.createElementNS(ns,"circle");
+    c.setAttribute("cx",cx); c.setAttribute("cy",95); c.setAttribute("r",78);
+    c.setAttribute("fill",color); c.setAttribute("fill-opacity",".55");
+    c.style.mixBlendMode = "multiply"; return c; };
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const ca = mk(72,"var(--a)"), cb = mk(228,"var(--b)");
+  if (dark){ ca.style.mixBlendMode = cb.style.mixBlendMode = "screen"; }
+  svg.append(ca, cb);
+  if (total != null){
+    const d = 8 + 150 * (1 - score/total);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      ca.setAttribute("cx", 150 - d/2); cb.setAttribute("cx", 150 + d/2);
+    }));
+  } else { ca.setAttribute("cx",112); cb.setAttribute("cx",188); }
+  return svg;
+}
+
+/* ---------- صفحه‌ها ---------- */
+function home(){
+  const w = screen();
+  const h = el("section","hero");
+  h.append(venn());
+  h.append(el("h1",null,"چقدر منو می‌شناسی؟"));
+  h.append(el("p","muted","به " + fa(N) + " سؤال درباره‌ی خودت جواب بده، بفرست برای پارتنر یا رفیق صمیمیت و ببین چندتاشو درست حدس می‌زنه."));
+  const a = el("div","actions stack");
+  const b1 = el("button","btn a","جواب‌های خودم رو می‌دم"); b1.onclick = askName;
+  const b2 = el("button","btn b","کد دارم، می‌خوام حدس بزنم"); b2.onclick = () => askCode();
+  a.append(b1,b2); h.append(a); w.append(h);
+}
+
+function askName(){
+  const w = screen("mode-a");
+  const s = el("div","stack");
+  s.append(el("h2",null,"اول اسمت"));
+  s.append(el("p","muted","اسمی که دوستت باهاش صدات می‌کنه. موقع حدس زدن نشونش می‌دیم."));
+  const lab = el("label",null,"اسم یا لقب"); lab.htmlFor = "nm";
+  const inp = el("input"); inp.id = "nm"; inp.maxLength = 30; inp.autocomplete = "nickname"; inp.value = S.name;
+  const err = el("p","err");
+  const go = el("button","btn a","شروع سؤال‌ها");
+  const start = () => {
+    const v = inp.value.trim();
+    if (!v){ err.textContent = "یه اسم بنویس تا بریم سراغ سؤال‌ها."; inp.focus(); return; }
+    S.mode = "a"; S.name = v; S.idx = 0; S.picks = []; question();
+  };
+  go.onclick = start; inp.onkeydown = e => { if (e.key === "Enter") start(); };
+  const back = el("button","link","بازگشت"); back.onclick = home;
+  const wrap = el("div"); wrap.append(lab, inp);
+  s.append(wrap, err, go, back); w.append(s);
+  setTimeout(()=>inp.focus(), 50);
+}
+
+function askCode(prefill){
+  const w = screen("mode-b");
+  const s = el("div","stack");
+  s.append(el("h2",null,"کد دوستت رو وارد کن"));
+  s.append(el("p","muted","پیامی که دوستت برات فرستاده رو کامل اینجا پیست کن، خودمون کد رو ازش پیدا می‌کنیم."));
+  const lab = el("label",null,"کد یا متن پیام"); lab.htmlFor = "cd";
+  const ta = el("textarea"); ta.id = "cd"; ta.value = prefill || ""; ta.dir = "auto";
+  const err = el("p","err");
+  const go = el("button","btn b","شروع حدس زدن");
+  go.onclick = () => {
+    const r = readCode(ta.value);
+    if (!r){ err.textContent = "کدی پیدا نشد. مطمئن شو کل کد رو کپی کردی، مثل 3FA90B2C71DE4.xxxx"; return; }
+    S.mode = "b"; S.target = r.picks; S.targetName = r.name; S.code = r.code; S.idx = 0; S.picks = [];
+    guessIntro();
+  };
+  const back = el("button","link","بازگشت"); back.onclick = home;
+  const wrap = el("div"); wrap.append(lab, ta);
+  s.append(wrap, err, go, back); w.append(s);
+}
+
+function guessIntro(){
+  const w = screen("mode-b");
+  const h = el("section","hero");
+  h.append(venn());
+  const t = el("h1"); t.textContent = S.targetName + " منتظرته!";
+  h.append(t);
+  h.append(el("p","muted", S.targetName + " به " + fa(N) + " سؤال جواب داده. تو باید حدس بزنی چی انتخاب کرده. آخرش امتیازت رو می‌بینی."));
+  const a = el("div","actions stack");
+  const go = el("button","btn b","بزن بریم"); go.onclick = question;
+  a.append(go); h.append(a); w.append(h);
+}
+
+function question(){
+  const i = S.idx, it = Q[i];
+  const w = screen(S.mode === "a" ? "mode-a" : "mode-b");
+  const top = el("div","top");
+  const back = el("button","link", i === 0 ? "خانه" : "قبلی");
+  back.onclick = () => { if (i === 0) home(); else { S.idx--; question(); } };
+  top.append(el("span","count", fa(i+1) + " از " + fa(N)), back);
+  const bar = el("div","bar"); const fill = el("i"); fill.style.width = (i/N*100) + "%"; bar.append(fill);
+  w.append(top, bar);
+  w.append(el("span","who", S.mode === "a" ? "درباره‌ی خودت" : "فکر می‌کنی " + S.targetName + " چی زده؟"));
+  w.append(el("h2","q", it.q));
+  const opts = el("div","opts"); opts.setAttribute("role","group");
+  let locked = false;
+  it.o.forEach((txt, k) => {
+    const b = el("button","opt" + (S.picks[i] === k ? " sel" : ""));
+    b.append(el("span","k",KEYS[k]), el("span",null,txt));
+    b.onclick = () => {
+      if (locked) return; locked = true;
+      S.picks[i] = k;
+      opts.querySelectorAll(".opt").forEach(x => x.classList.remove("sel")); b.classList.add("sel");
+      fill.style.width = ((i+1)/N*100) + "%";
+      setTimeout(() => { if (i < N-1){ S.idx++; question(); } else finish(); }, 260);
+    };
+    opts.append(b);
+  });
+  w.append(opts);
+}
+
+function finish(){ S.mode === "a" ? created() : result(); }
+
+function created(){
+  const code = makeCode(S.picks, S.name);
+  const w = screen("mode-a");
+  const s = el("div","stack");
+  s.append(el("h2",null,"تموم شد! حالا بفرستش"));
+  s.append(el("p","muted","این پیام رو برای پارتنر یا دوستت بفرست. اون لینک رو باز می‌کنه، کد رو وارد می‌کنه و شروع می‌کنه به حدس زدن."));
+  const box = el("div","codebox");
+  box.append(el("p","note","کد تو"), el("p","code",code));
+  s.append(box);
+  const link = APP_URL ? APP_URL + "#" + code : "";
+  const text = "به " + fa(N) + " سؤال درباره‌ی خودم جواب دادم. ببینم چقدر منو می‌شناسی! 💞\n"
+             + (link ? "لینک: " + link + "\n" : "")
+             + "کد من: " + code;
+  shareBlock(s, text, "فرستادن پیام", "a");
+  const again = el("button","link","از اول جواب بدم"); again.onclick = askName;
+  const hm = el("button","link","خانه"); hm.onclick = home;
+  const r = el("div"); r.style.textAlign = "center"; r.append(again, hm);
+  s.append(r); w.append(s);
+}
+
+function verdict(s){
+  const p = s / N;
+  if (p >= .9) return "تو عملاً ذهن‌خوانی! 😳";
+  if (p >= .7) return "خیلی خوب می‌شناسیش 💞";
+  if (p >= .5) return "بد نیست، ولی هنوز جای کشف داره";
+  if (p >= .3) return "انگار باید بیشتر با هم وقت بگذرونین";
+  return "مطمئنی همدیگه رو می‌شناسین؟ 😅";
+}
+
+function result(){
+  const score = S.picks.reduce((s,v,i) => s + (v === S.target[i] ? 1 : 0), 0);
+  const w = screen("mode-b");
+  const r = el("section","result");
+  r.append(venn(score, N));
+  const sc = el("p","score"); sc.append(fa(score) + " "); sc.append(el("small",null,"از " + fa(N)));
+  r.append(sc, el("p","verdict", verdict(score)));
+  const a = el("div","actions stack");
+  const text = "توی «چقدر منو می‌شناسی؟» " + fa(score) + " از " + fa(N) + " جواب‌های " + S.targetName + " رو درست حدس زدم! " + verdict(score)
+             + (APP_URL ? "\n" + APP_URL : "");
+  shareBlock(a, text, "فرستادن نتیجه برای " + S.targetName, "b");
+  const mine = el("button","btn a","حالا نوبت منه که جواب بدم"); mine.onclick = askName;
+  a.append(mine);
+  r.append(a);
+
+  const rv = el("div","review");
+  rv.append(el("h2",null,"جواب‌ها کنار هم"));
+  Q.forEach((it, i) => {
+    const ok = S.picks[i] === S.target[i];
+    const d = el("div","item");
+    const qq = el("p","qq"); qq.append(el("span","mark " + (ok ? "ok" : "bad"), ok ? "✓" : "✗"), document.createTextNode(it.q));
+    d.append(qq);
+    const a1 = el("p","ans"); a1.append(document.createTextNode(S.targetName + ": ")); a1.append(el("b",null,it.o[S.target[i]]));
+    d.append(a1);
+    if (!ok){ const a2 = el("p","ans"); a2.append(document.createTextNode("حدس تو: ")); a2.append(el("b",null,it.o[S.picks[i]])); d.append(a2); }
+    rv.append(d);
+  });
+  r.append(rv);
+  w.append(r);
+}
+
+/* ---------- شروع ---------- */
+(function init(){
+  let found = null;
+  try { found = readCode(decodeURIComponent(location.hash.slice(1))) || readCode(location.search); } catch(e){}
+  if (found){ S.mode = "b"; S.target = found.picks; S.targetName = found.name; S.code = found.code; S.idx = 0; S.picks = []; guessIntro(); }
+  else home();
+})();
+</script>
+</body>
+</html>
